@@ -1,0 +1,13 @@
+*.html
+*.doc
+*.csv
+*.xlsx
+*.zip
+*.npy
+
+# directories
+imdb/
+archive/
+
+# test file
+test.*
