@@ -4,6 +4,7 @@
 *.xlsx
 *.zip
 *.npy
+*.sql
 
 # directories
 imdb/
