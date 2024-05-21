@@ -1,7 +1,10 @@
-from typing import List
+import torch
 import numpy as np
+import pandas as pd
 
 from dtos.recommend_dto import RecommendResponseDto
+from model.models import GCNLinkPredictor, LinkPredictor
+from utils.utils import create_new_user_embedding, recommend_movies_for_new_user
 
 genre_mapping = {
     1 :"Action",
@@ -28,29 +31,51 @@ genre_mapping = {
 }
 
 class RecommendService:
-    movie_embedding = np.load("./data/embeddings_without_directors_gat_0512.npy")
+    def __init__(self):
+        self.movie_features = torch.from_numpy(np.load("./data/final_features_without_directors_0518.npy")).float()
+        self.interactions = pd.read_csv("./data/interactions.csv")
 
-    async def default_recommendation(self, user_movie_id_list: list) -> RecommendResponseDto:
-        movie_id_list = []
-        
-        for movie_id in user_movie_id_list:
-            euclidean_dist = [
-                {
-                    "index": i,
-                    "distance": np.linalg.norm(self.movie_embedding[movie_id - 1] - vector)
-                } for i, vector in enumerate(self.movie_embedding)
-            ]
-            euclidean_dist.sort(key=lambda x: x["distance"])
 
-            # Get the top 10 most similar movies
-            top_10 = euclidean_dist[1:11]
-            top_10 = [movie["index"] + 1 for movie in top_10]
-            movie_id_list.extend(top_10)            
+        num_in_features = self.movie_features.shape[1]
+        num_out_features = self.movie_features.shape[1]
+        self.num_users = 1
+
+        # load saved models
+        gcn_model = GCNLinkPredictor(num_in_features, num_out_features, self.num_users)
+        link_predictor = LinkPredictor(num_out_features)
+        gcn_model.load_state_dict(torch.load('./model/gcn_model.pth'))
+        link_predictor.load_state_dict(torch.load('./model/link_predictor.pth'))
+
+        # 모델을 evaluation 모드로 변경
+        gcn_model.eval()
+        link_predictor.eval()
+
+        self.gcn_model = gcn_model
+        self.link_predictor = link_predictor
+
+    async def recommendation(self, user_id: int, genre_id_list: list) -> RecommendResponseDto:
+        new_user_interacted_movies = self.interactions.loc[self.interactions['user_id'] == user_id]["movie_id"].values
+        print(new_user_interacted_movies)
+        new_user_embedding = create_new_user_embedding(self.movie_features, list(new_user_interacted_movies))
+
+        new_x = torch.cat([new_user_embedding.view(1, -1), self.movie_features], dim=0)
+        num_users = 1
+
+        # 유저 - 영화 간 상호작용 edge index로 변환
+        user_indices = [i for i in range(num_users)]
+        movie_indices = [i + num_users for i in new_user_interacted_movies]
+
+        edge_index = torch.tensor([user_indices * len(movie_indices), movie_indices], dtype=torch.long)
+
+        node_embeddings = self.gcn_model(new_x, edge_index)
+
+        num_recommendations = 20
+        movie_id_list = recommend_movies_for_new_user(self.link_predictor, node_embeddings, num_recommendations=num_recommendations)        
 
         return RecommendResponseDto(
                 status=200,
                 message="Recommend Successfully",
-                data=movie_id_list
+                data=movie_id_list.tolist()
             )
 
     async def genre_based_recommendation(self, genre_id: int):

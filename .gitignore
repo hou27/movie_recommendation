@@ -12,3 +12,6 @@ archive/
 
 # test file
 test.*
+
+# model files
+*.pth
