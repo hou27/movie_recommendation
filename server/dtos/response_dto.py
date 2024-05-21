@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List
 
 
-class RecommendResponseDto(BaseModel):
+class ResponseDto(BaseModel):
     status: int
     message: str
     data: list = []

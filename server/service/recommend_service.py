@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import pandas as pd
 
-from dtos.recommend_dto import RecommendResponseDto
+from dtos.response_dto import ResponseDto
 from model.models import GCNLinkPredictor, LinkPredictor
 from utils.utils import create_new_user_embedding, recommend_movies_for_new_user
 
@@ -53,7 +53,7 @@ class RecommendService:
         self.gcn_model = gcn_model
         self.link_predictor = link_predictor
 
-    async def recommendation(self, user_id: int, genre_id_list: list) -> RecommendResponseDto:
+    async def recommendation(self, user_id: int, genre_id_list: list) -> ResponseDto:
         new_user_interacted_movies = self.interactions.loc[self.interactions['user_id'] == user_id]["movie_id"].values
         print(new_user_interacted_movies)
         new_user_embedding = create_new_user_embedding(self.movie_features, list(new_user_interacted_movies))
@@ -72,7 +72,7 @@ class RecommendService:
         num_recommendations = 20
         movie_id_list = recommend_movies_for_new_user(self.link_predictor, node_embeddings, num_recommendations=num_recommendations)        
 
-        return RecommendResponseDto(
+        return ResponseDto(
                 status=200,
                 message="Recommend Successfully",
                 data=movie_id_list.tolist()
