@@ -10,7 +10,9 @@ RUN pip install --upgrade pip \
 COPY . .
 COPY ./data ./data
 COPY ./dtos ./dtos
+COPY ./model ./model
 COPY ./service ./service
+COPY ./utils ./utils
 
 # Run with uvicorn
 CMD ["uvicorn", "main:app", "--reload", "--host=0.0.0.0", "--port=8000"]
