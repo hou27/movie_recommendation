@@ -17,15 +17,15 @@ def read_root():
 async def recommendation(
         recommend_service: RecommendService = Depends(RecommendService),
         user_id: int = Query(...), # required
-        genre_ids: str = Query(None), # optional
+        genre_id: int = Query(None), # optional
     ) ->  ResponseDto:
-    genre_id_list = []
-    if genre_ids:
-        genre_id_list = [int(id) for id in genre_ids.split(',')]
+    # genre_id_list = []
+    # if genre_ids:
+    #     genre_id_list = [int(id) for id in genre_ids.split(',')]
 
     return await recommend_service.recommendation(
             user_id=int(user_id), 
-            genre_id_list=genre_id_list
+            genre_id=genre_id
         )
 
 @app.post("/surveys/result", status_code=201, response_model=ResponseDto)

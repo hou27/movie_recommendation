@@ -53,7 +53,7 @@ class RecommendService:
         self.gcn_model = gcn_model
         self.link_predictor = link_predictor
 
-    async def recommendation(self, user_id: int, genre_id_list: list) -> ResponseDto:
+    async def recommendation(self, user_id: int, genre_id: int) -> ResponseDto:
         new_user_interacted_movies = self.interactions.loc[self.interactions['user_id'] == user_id]["movie_id"].values
         print(new_user_interacted_movies)
         new_user_embedding = create_new_user_embedding(self.movie_features, list(new_user_interacted_movies))
@@ -69,6 +69,12 @@ class RecommendService:
 
         node_embeddings = self.gcn_model(new_x, edge_index)
 
+        # 장르 기반 추천일 경우
+        if genre_id:
+            genre = genre_mapping[genre_id]
+            genre_indexs = np.load(f"./genre_index/{genre}_indexs.npy")
+            node_embeddings = torch.cat([node_embeddings[:num_users], node_embeddings[num_users:][genre_indexs]], dim=0)
+
         num_recommendations = 20
         movie_id_list = recommend_movies_for_new_user(self.link_predictor, node_embeddings, num_recommendations=num_recommendations)        
 
@@ -77,6 +83,3 @@ class RecommendService:
                 message="Recommend Successfully",
                 data=movie_id_list.tolist()
             )
-
-    async def genre_based_recommendation(self, genre_id: int):
-        pass
