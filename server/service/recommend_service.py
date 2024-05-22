@@ -69,15 +69,22 @@ class RecommendService:
 
         node_embeddings = self.gcn_model(new_x, edge_index)
 
+        num_movies = self.movie_features.shape[0]
+        genre_indexs = None
+
         # 장르 기반 추천일 경우
         if genre_id:
             genre = genre_mapping[genre_id]
             genre_indexs = np.load(f"./genre_index/{genre}_indexs.npy")
+            num_movies = genre_indexs.shape[0]
             node_embeddings = torch.cat([node_embeddings[:num_users], node_embeddings[num_users:][genre_indexs]], dim=0)
 
         num_recommendations = 20
-        movie_id_list = recommend_movies_for_new_user(self.link_predictor, node_embeddings, num_recommendations=num_recommendations)        
-
+        movie_id_list = recommend_movies_for_new_user(self.link_predictor, node_embeddings, num_movies=num_movies, num_recommendations=num_recommendations)
+        print(movie_id_list)
+        if genre_indexs is not None:
+            movie_id_list = genre_indexs[movie_id_list]
+        print(movie_id_list)
         return ResponseDto(
                 status=200,
                 message="Recommend Successfully",
