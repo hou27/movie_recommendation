@@ -4,6 +4,7 @@ from fastapi import Depends, FastAPI, Query
 from service.interaction_service import InteractionService
 from service.recommend_service import RecommendService
 from dtos.response_dto import ResponseDto
+from dtos.interaction_request_dto import ControlLikeRequest, SurveyResultRequest
 
 app = FastAPI()
 
@@ -11,7 +12,6 @@ app = FastAPI()
 @app.get("/")
 def read_root():
     return {"Hello": "hou27"}
-
 
 @app.get("/recommendation", status_code=200, response_model=ResponseDto)
 async def recommendation(
@@ -30,18 +30,20 @@ async def recommendation(
 
 @app.post("/surveys/result", status_code=201, response_model=ResponseDto)
 async def survey_result(
+        request: SurveyResultRequest,
         interaction_service: InteractionService = Depends(InteractionService),
-        user_id: int = Query(..., alias="userId"),
-        movie_ids: str = Query(..., alias="movieIds")
     ) ->  ResponseDto:
-    movie_id_list = [int(id) for id in movie_ids.split(',')]
+    user_id = request.userId
+    movie_id_list = request.movieIds
 
     return await interaction_service.survey_result(user_id, movie_id_list)
 
 @app.post("/likes", status_code=201, response_model=ResponseDto)
 async def control_like(
+        request: ControlLikeRequest,
         interaction_service: InteractionService = Depends(InteractionService),
-        user_id: int = Query(..., alias="userId"),
-        movie_id: int = Query(..., alias="movieId")
     ) ->  ResponseDto:
+    user_id = request.userId
+    movie_id = request.movieId
+
     return await interaction_service.control_like(user_id, movie_id)
