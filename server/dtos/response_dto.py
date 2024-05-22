@@ -1,8 +1,7 @@
 from pydantic import BaseModel
-from typing import List
-
 
 class ResponseDto(BaseModel):
     status: int
     message: str
-    data: list = []
+    # data is list or None
+    data: list = None
