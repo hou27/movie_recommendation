@@ -19,6 +19,6 @@ def recommend_movies_for_new_user(link_predictor, node_embeddings, num_users = 1
     
     # top N 추천
     _, top_indices = torch.topk(scores.squeeze(), num_recommendations)
-    top_movie_indices = user_movie_pairs[1][top_indices] - num_users # 유저 수만큼 offset 재조정
+    top_movie_indices = user_movie_pairs[1][top_indices] - num_users + 1 # 유저 수만큼 offset 재조정 후 db index와 맞추기 위해 1을 더해줌
     
     return top_movie_indices
