@@ -16,8 +16,8 @@ def read_root():
 @app.get("/recommendation", status_code=200, response_model=ResponseDto)
 async def recommendation(
         recommend_service: RecommendService = Depends(RecommendService),
-        user_id: int = Query(...), # required
-        genre_id: int = Query(None), # optional
+        user_id: int = Query(..., alias="userId"), # required
+        genre_id: int = Query(None, alias="genreId"), # optional
     ) ->  ResponseDto:
     # genre_id_list = []
     # if genre_ids:
@@ -31,17 +31,17 @@ async def recommendation(
 @app.post("/surveys/result", status_code=201, response_model=ResponseDto)
 async def survey_result(
         interaction_service: InteractionService = Depends(InteractionService),
-        userId: int = Query(..., alias="userId"),
-        movieIds: str = Query(...)
+        user_id: int = Query(..., alias="userId"),
+        movie_ids: str = Query(..., alias="movieIds")
     ) ->  ResponseDto:
-    movie_id_list = [int(id) for id in movieIds.split(',')]
+    movie_id_list = [int(id) for id in movie_ids.split(',')]
 
-    return await interaction_service.survey_result(userId, movie_id_list)
+    return await interaction_service.survey_result(user_id, movie_id_list)
 
 @app.post("/likes", status_code=201, response_model=ResponseDto)
 async def control_like(
         interaction_service: InteractionService = Depends(InteractionService),
-        userId: int = Query(..., alias="userId"),
-        movieId: int = Query(...)
+        user_id: int = Query(..., alias="userId"),
+        movie_id: int = Query(..., alias="movieId")
     ) ->  ResponseDto:
-    return await interaction_service.control_like(userId, movieId)
+    return await interaction_service.control_like(user_id, movie_id)
