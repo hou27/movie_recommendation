@@ -10,6 +10,7 @@ RUN pip install --upgrade pip \
 COPY . .
 COPY ./data ./data
 COPY ./dtos ./dtos
+COPY ./genre_index ./genre_index
 COPY ./model ./model
 COPY ./service ./service
 COPY ./utils ./utils
