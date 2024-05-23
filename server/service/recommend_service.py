@@ -55,7 +55,8 @@ class RecommendService:
 
     async def recommendation(self, user_id: int, genre_id: int) -> ResponseDto:
         new_user_interacted_movies = self.interactions.loc[self.interactions['user_id'] == user_id]["movie_id"].values
-        print(new_user_interacted_movies)
+        new_user_interacted_movies = new_user_interacted_movies - 1 # db index와 data index를 맞추기 위해 1을 빼줌
+        # print("\n\n\n\n", new_user_interacted_movies, "\n\n\n\n")
         new_user_embedding = create_new_user_embedding(self.movie_features, list(new_user_interacted_movies))
 
         new_x = torch.cat([new_user_embedding.view(1, -1), self.movie_features], dim=0)
@@ -80,11 +81,11 @@ class RecommendService:
             node_embeddings = torch.cat([node_embeddings[:num_users], node_embeddings[num_users:][genre_indexs]], dim=0)
 
         num_recommendations = 20
-        movie_id_list = recommend_movies_for_new_user(self.link_predictor, node_embeddings, num_movies=num_movies, num_recommendations=num_recommendations)
-        print(movie_id_list)
+        movie_id_list = recommend_movies_for_new_user(self.link_predictor, node_embeddings, edge_index=edge_index, num_movies=num_movies, num_recommendations=num_recommendations)
+
         if genre_indexs is not None:
             movie_id_list = genre_indexs[movie_id_list]
-        print(movie_id_list)
+        # print(movie_id_list)
         return ResponseDto(
                 status=200,
                 message="Recommend Successfully",

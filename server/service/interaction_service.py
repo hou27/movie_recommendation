@@ -8,6 +8,7 @@ class InteractionService:
         self.users = pd.read_csv("./data/users.csv")
 
     async def survey_result(self, user_id: int, movie_id_list: list) -> ResponseDto:
+        # movie_id_list = [movie_id - 1 for movie_id in movie_id_list] # db index와 data index를 맞추기 위해 1을 빼줌
         for movie_id in movie_id_list:
             if self.interactions.loc[(self.interactions['user_id'] == user_id) & (self.interactions['movie_id'] == movie_id)].empty:
                 self.interactions = pd.concat([self.interactions, pd.DataFrame([[user_id, movie_id]], columns=["user_id", "movie_id"])])
@@ -24,6 +25,7 @@ class InteractionService:
             )
 
     async def control_like(self, user_id: int, movie_id: int) -> ResponseDto:
+        # movie_id = movie_id - 1 # db index와 data index를 맞추기 위해 1을 빼줌
         if self.interactions.loc[(self.interactions['user_id'] == user_id) & (self.interactions['movie_id'] == movie_id)].empty:
             self.interactions = pd.concat([self.interactions, pd.DataFrame([[user_id, movie_id]], columns=["user_id", "movie_id"])])
         else:
