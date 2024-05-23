@@ -24,7 +24,7 @@ async def recommendation(
     #     genre_id_list = [int(id) for id in genre_ids.split(',')]
 
     return await recommend_service.recommendation(
-            user_id=int(user_id), 
+            user_id=user_id, 
             genre_id=genre_id
         )
 
@@ -47,3 +47,11 @@ async def control_like(
     movie_id = request.movieId
 
     return await interaction_service.control_like(user_id, movie_id)
+
+@app.get("/likes", status_code=200, response_model=ResponseDto)
+async def get_interactions(
+        interaction_service: InteractionService = Depends(InteractionService),
+        user_id: int = Query(..., alias="userId"),
+    ) ->  ResponseDto:
+
+    return await interaction_service.get_interactions(user_id)
