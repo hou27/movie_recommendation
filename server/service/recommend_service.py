@@ -32,20 +32,19 @@ genre_mapping = {
 
 class RecommendService:
     def __init__(self):
-        self.movie_features = torch.from_numpy(np.load("./data/final_features_without_directors_0518.npy")).float()
+        self.movie_features = torch.from_numpy(np.load("./data/final_features_0528.npy")).float()
         self.interactions = pd.read_csv("./data/interactions.csv")
-
 
         num_in_features = self.movie_features.shape[1]
         num_out_features = self.movie_features.shape[1]
         self.num_users = 1
-
+        print(num_in_features)
         # load saved models
         gcn_model = GCNLinkPredictor(num_in_features, num_out_features, self.num_users)
         link_predictor = LinkPredictor(num_out_features)
         gcn_model.load_state_dict(torch.load('./model/gcn_model.pth'))
         link_predictor.load_state_dict(torch.load('./model/link_predictor.pth'))
-
+        print("Model loaded successfully")
         # 모델을 evaluation 모드로 변경
         gcn_model.eval()
         link_predictor.eval()
@@ -95,7 +94,7 @@ class RecommendService:
                 
             # 중복 제거
             movie_id_list = list(set(movie_id_list))
-            
+
         movie_id_list += recommend_movies_for_new_user(
                 self.link_predictor, 
                 node_embeddings, 
