@@ -98,6 +98,9 @@ class RecommendService:
                 genre_indexs=genre_indexs
             ).tolist()[:20-len(movie_id_list)]
         
+        # 중복 제거
+        movie_id_list = list(set(movie_id_list))
+        
         return ResponseDto(
                 status=200,
                 message="Recommend Successfully",
