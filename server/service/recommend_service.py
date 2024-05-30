@@ -80,15 +80,22 @@ class RecommendService:
 
         num_recommendations = 20
         movie_id_list = []
-        for i in range(edge_index.shape[1] - 1):
-            movie_id_list += recommend_movies_for_new_user(
-                    self.link_predictor, 
-                    node_embeddings, 
-                    edge_index=edge_index[:, i].reshape(-1, 1), 
-                    num_movies=num_movies, 
-                    num_recommendations=num_recommendations,  
-                    genre_indexs=genre_indexs
-                ).tolist()[:int(num_recommendations/edge_index.shape[1])]
+        
+        # 장르 기반 추천이 아닐 경우
+        if not genre_id:
+            for i in range(edge_index.shape[1] - 1):
+                movie_id_list += recommend_movies_for_new_user(
+                        self.link_predictor, 
+                        node_embeddings, 
+                        edge_index=edge_index[:, i].reshape(-1, 1), 
+                        num_movies=num_movies, 
+                        num_recommendations=num_recommendations,  
+                        genre_indexs=genre_indexs
+                    ).tolist()[:int(num_recommendations/edge_index.shape[1])]
+                
+            # 중복 제거
+            movie_id_list = list(set(movie_id_list))
+            
         movie_id_list += recommend_movies_for_new_user(
                 self.link_predictor, 
                 node_embeddings, 
