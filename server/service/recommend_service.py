@@ -56,7 +56,7 @@ class RecommendService:
     async def recommendation(self, user_id: int, genre_id: int) -> ResponseDto:
         new_user_interacted_movies = self.interactions.loc[self.interactions['user_id'] == user_id]["movie_id"].values
         new_user_interacted_movies = new_user_interacted_movies - 1 # db index와 data index를 맞추기 위해 1을 빼줌
-
+        print(new_user_interacted_movies)
         num_movies = self.movie_features.shape[0]
         genre_indexs = None
 
@@ -75,13 +75,19 @@ class RecommendService:
                 node_embeddings, edge_index = self.__create_node_embedding([new_user_interacted_movies[i]])
                 movie_id_list += recommend_movies_for_new_user(
                         self.link_predictor, 
-                        node_embeddings, 
+                        node_embeddings,
                         edge_index=edge_index, 
                         num_movies=num_movies, 
                         num_recommendations=num_recommendations,  
-                        genre_indexs=genre_indexs
-                    ).tolist()[:int(num_recommendations/num_user_interacted_movies)]
-                
+                        genre_indexs=genre_indexs,
+                        interacted_movie_index=new_user_interacted_movies
+                    ).tolist()
+                # 위 결과에서 int(num_recommendations/num_user_interacted_movies)개를 랜덤으로 선정
+                movie_id_list = np.random.choice(
+                        movie_id_list, 
+                        int(num_recommendations/num_user_interacted_movies), replace=False
+                    ).tolist()
+                print(movie_id_list)
             # 중복 제거
             movie_id_list = list(set(movie_id_list))
 
@@ -92,7 +98,8 @@ class RecommendService:
                 edge_index=edge_index, 
                 num_movies=num_movies, 
                 num_recommendations=num_recommendations,
-                genre_indexs=genre_indexs
+                genre_indexs=genre_indexs,
+                interacted_movie_index=new_user_interacted_movies
             ).tolist()[:20-len(movie_id_list)]
         
         # 중복 제거
