@@ -55,8 +55,69 @@ class RecommendService:
     async def recommendation(self, user_id: int, genre_id: int) -> ResponseDto:
         new_user_interacted_movies = self.interactions.loc[self.interactions['user_id'] == user_id]["movie_id"].values
         new_user_interacted_movies = new_user_interacted_movies - 1 # db index와 data index를 맞추기 위해 1을 빼줌
-        # print("\n\n\n\n", new_user_interacted_movies, "\n\n\n\n")
-        new_user_embedding = create_new_user_embedding(self.movie_features, list(new_user_interacted_movies))
+        
+        # new_user_embedding = create_new_user_embedding(self.movie_features, list(new_user_interacted_movies))
+
+        # new_x = torch.cat([new_user_embedding.view(1, -1), self.movie_features], dim=0)
+        # num_users = 1
+
+        # # 유저 - 영화 간 상호작용 edge index로 변환
+        # user_indices = [i for i in range(num_users)]
+        # movie_indices = [i + num_users for i in new_user_interacted_movies]
+
+        # edge_index = torch.tensor([user_indices * len(movie_indices), movie_indices], dtype=torch.long)
+
+        # node_embeddings = self.gcn_model(new_x, edge_index)
+
+        num_movies = self.movie_features.shape[0]
+        genre_indexs = None
+
+        num_recommendations = 20
+        movie_id_list = []
+
+        # 장르 기반 추천일 경우
+        if genre_id:
+            genre = genre_mapping[genre_id]
+            genre_indexs = np.load(f"./genre_index/{genre}_indexs.npy")      
+
+        # 장르 기반 추천이 아닐 경우
+        elif not genre_id:
+            for i in range(len(new_user_interacted_movies) - 1):
+                node_embeddings, edge_index = self.__create_node_embedding([new_user_interacted_movies[i]])
+                movie_id_list += recommend_movies_for_new_user(
+                        self.link_predictor, 
+                        node_embeddings, 
+                        edge_index=edge_index, 
+                        num_movies=num_movies, 
+                        num_recommendations=num_recommendations,  
+                        genre_indexs=genre_indexs
+                    ).tolist()[:int(num_recommendations/edge_index.shape[1])]
+                
+            # 중복 제거
+            movie_id_list = list(set(movie_id_list))
+
+        node_embeddings, edge_index = self.__create_node_embedding(new_user_interacted_movies)
+        movie_id_list += recommend_movies_for_new_user(
+                self.link_predictor, 
+                node_embeddings, 
+                edge_index=edge_index, 
+                num_movies=num_movies, 
+                num_recommendations=num_recommendations,
+                genre_indexs=genre_indexs
+            ).tolist()[:20-len(movie_id_list)]
+        
+        # 중복 제거
+        movie_id_list = list(set(movie_id_list))
+        
+        return ResponseDto(
+                status=200,
+                message="Recommend Successfully",
+                data=movie_id_list
+            )
+    
+    # private method for create node embeddings
+    def __create_node_embedding(self, new_user_interacted_movies: list):
+        new_user_embedding = create_new_user_embedding(self.movie_features, new_user_interacted_movies)
 
         new_x = torch.cat([new_user_embedding.view(1, -1), self.movie_features], dim=0)
         num_users = 1
@@ -69,46 +130,4 @@ class RecommendService:
 
         node_embeddings = self.gcn_model(new_x, edge_index)
 
-        num_movies = self.movie_features.shape[0]
-        genre_indexs = None
-
-        # 장르 기반 추천일 경우
-        if genre_id:
-            genre = genre_mapping[genre_id]
-            genre_indexs = np.load(f"./genre_index/{genre}_indexs.npy")
-
-        num_recommendations = 20
-        movie_id_list = []
-        
-        # 장르 기반 추천이 아닐 경우
-        if not genre_id:
-            for i in range(edge_index.shape[1] - 1):
-                movie_id_list += recommend_movies_for_new_user(
-                        self.link_predictor, 
-                        node_embeddings, 
-                        edge_index=edge_index[:, i].reshape(-1, 1), 
-                        num_movies=num_movies, 
-                        num_recommendations=num_recommendations,  
-                        genre_indexs=genre_indexs
-                    ).tolist()[:int(num_recommendations/edge_index.shape[1])]
-                
-            # 중복 제거
-            movie_id_list = list(set(movie_id_list))
-
-        movie_id_list += recommend_movies_for_new_user(
-                self.link_predictor, 
-                node_embeddings, 
-                edge_index=edge_index, 
-                num_movies=num_movies, 
-                num_recommendations=num_recommendations,  
-                genre_indexs=genre_indexs
-            ).tolist()[:20-len(movie_id_list)]
-        
-        # 중복 제거
-        movie_id_list = list(set(movie_id_list))
-        
-        return ResponseDto(
-                status=200,
-                message="Recommend Successfully",
-                data=movie_id_list
-            )
+        return node_embeddings, edge_index
