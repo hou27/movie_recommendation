@@ -55,19 +55,6 @@ class RecommendService:
     async def recommendation(self, user_id: int, genre_id: int) -> ResponseDto:
         new_user_interacted_movies = self.interactions.loc[self.interactions['user_id'] == user_id]["movie_id"].values
         new_user_interacted_movies = new_user_interacted_movies - 1 # db index와 data index를 맞추기 위해 1을 빼줌
-        
-        # new_user_embedding = create_new_user_embedding(self.movie_features, list(new_user_interacted_movies))
-
-        # new_x = torch.cat([new_user_embedding.view(1, -1), self.movie_features], dim=0)
-        # num_users = 1
-
-        # # 유저 - 영화 간 상호작용 edge index로 변환
-        # user_indices = [i for i in range(num_users)]
-        # movie_indices = [i + num_users for i in new_user_interacted_movies]
-
-        # edge_index = torch.tensor([user_indices * len(movie_indices), movie_indices], dtype=torch.long)
-
-        # node_embeddings = self.gcn_model(new_x, edge_index)
 
         num_movies = self.movie_features.shape[0]
         genre_indexs = None
