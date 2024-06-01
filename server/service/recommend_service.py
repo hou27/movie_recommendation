@@ -38,13 +38,14 @@ class RecommendService:
         num_in_features = self.movie_features.shape[1]
         num_out_features = self.movie_features.shape[1]
         self.num_users = 1
-        print(num_in_features)
+
         # load saved models
         gcn_model = GCNLinkPredictor(num_in_features, num_out_features, self.num_users)
         link_predictor = LinkPredictor(num_out_features)
         gcn_model.load_state_dict(torch.load('./model/gcn_model_0601.pth'))
         link_predictor.load_state_dict(torch.load('./model/link_predictor_0601.pth'))
         print("Model loaded successfully")
+
         # 모델을 evaluation 모드로 변경
         gcn_model.eval()
         link_predictor.eval()
@@ -60,6 +61,7 @@ class RecommendService:
         genre_indexs = None
 
         num_recommendations = 20
+        num_user_interacted_movies = len(new_user_interacted_movies)
         movie_id_list = []
 
         # 장르 기반 추천일 경우
@@ -69,7 +71,7 @@ class RecommendService:
 
         # 장르 기반 추천이 아닐 경우
         elif not genre_id:
-            for i in range(len(new_user_interacted_movies) - 1):
+            for i in range(num_user_interacted_movies - 1):
                 node_embeddings, edge_index = self.__create_node_embedding([new_user_interacted_movies[i]])
                 movie_id_list += recommend_movies_for_new_user(
                         self.link_predictor, 
@@ -78,7 +80,7 @@ class RecommendService:
                         num_movies=num_movies, 
                         num_recommendations=num_recommendations,  
                         genre_indexs=genre_indexs
-                    ).tolist()[:int(num_recommendations/edge_index.shape[1])]
+                    ).tolist()[:int(num_recommendations/num_user_interacted_movies)]
                 
             # 중복 제거
             movie_id_list = list(set(movie_id_list))
