@@ -14,7 +14,7 @@ def recommend_movies_for_new_user(link_predictor, node_embeddings, edge_index, n
     user_movie_pairs = torch.stack([torch.zeros(num_movies, dtype=torch.long), movie_indices], dim=0)
 
     # 기존 유저가 본 영화 제외
-    already_seen_movies = interacted_movie_index - num_users
+    already_seen_movies = interacted_movie_index
     mask = torch.ones(num_movies, dtype=torch.bool)
     if genre_indexs is not None:
         mask = torch.zeros(num_movies, dtype=torch.bool) # 모든 영화에 대해 False로 초기화

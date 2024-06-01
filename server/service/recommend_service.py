@@ -56,7 +56,6 @@ class RecommendService:
     async def recommendation(self, user_id: int, genre_id: int) -> ResponseDto:
         new_user_interacted_movies = self.interactions.loc[self.interactions['user_id'] == user_id]["movie_id"].values
         new_user_interacted_movies = new_user_interacted_movies - 1 # db index와 data index를 맞추기 위해 1을 빼줌
-        print(new_user_interacted_movies)
         num_movies = self.movie_features.shape[0]
         genre_indexs = None
 
@@ -87,7 +86,7 @@ class RecommendService:
                         movie_id_list, 
                         int(num_recommendations/num_user_interacted_movies), replace=False
                     ).tolist()
-                print(movie_id_list)
+                
             # 중복 제거
             movie_id_list = list(set(movie_id_list))
 
@@ -104,7 +103,7 @@ class RecommendService:
         
         # 중복 제거
         movie_id_list = list(set(movie_id_list))
-        
+
         return ResponseDto(
                 status=200,
                 message="Recommend Successfully",
