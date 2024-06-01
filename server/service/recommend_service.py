@@ -42,8 +42,8 @@ class RecommendService:
         # load saved models
         gcn_model = GCNLinkPredictor(num_in_features, num_out_features, self.num_users)
         link_predictor = LinkPredictor(num_out_features)
-        gcn_model.load_state_dict(torch.load('./model/gcn_model_0601.pth'))
-        link_predictor.load_state_dict(torch.load('./model/link_predictor_0601.pth'))
+        gcn_model.load_state_dict(torch.load('./model/gcn_model_0601_light.pth'))
+        link_predictor.load_state_dict(torch.load('./model/link_predictor_0601_light.pth'))
         print("Model loaded successfully")
 
         # 모델을 evaluation 모드로 변경
