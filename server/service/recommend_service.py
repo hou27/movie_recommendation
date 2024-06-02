@@ -61,6 +61,14 @@ class RecommendService:
 
         num_recommendations = 20
         num_user_interacted_movies = len(new_user_interacted_movies)
+        
+        # 유저가 상호작용한 영화가 없을 경우
+        if num_user_interacted_movies == 0:
+            return ResponseDto(
+                status=400,
+                message="No Interacted Movies",
+                data=[]
+            )
         movie_id_list = []
 
         # 장르 기반 추천일 경우
