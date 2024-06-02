@@ -83,7 +83,7 @@ class RecommendService:
                 recommend_movie_count_per_loop = 1
             # loop backward
             for i in range(num_user_interacted_movies - 1, -1, -1):
-                node_embeddingsx = self.__create_node_embedding([new_user_interacted_movies[i]])
+                node_embeddings = self.__create_node_embedding([new_user_interacted_movies[i]])
                 movie_id_list += recommend_movies_for_new_user(
                         self.link_predictor, 
                         node_embeddings,
