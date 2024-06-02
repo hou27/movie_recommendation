@@ -31,9 +31,9 @@ class LinkPredictor(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(input_dim * 2, input_dim * 2)
         self.fc2 = nn.Linear(input_dim * 2, input_dim)
-        self.fc3 = nn.Linear(input_dim, 1)
-        # self.fc3 = nn.Linear(input_dim, input_dim)
-        # self.fc4 = nn.Linear(input_dim, 1)
+        # self.fc3 = nn.Linear(input_dim, 1)
+        self.fc3 = nn.Linear(input_dim, input_dim)
+        self.fc4 = nn.Linear(input_dim, 1)
         self.dropout = nn.Dropout(p=0.5)
 
     def forward(self, z, edge_index):
@@ -53,9 +53,8 @@ class LinkPredictor(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.dropout(x)
 
-        # x = F.relu(self.fc3(x))
-        # x = self.dropout(x)
+        x = F.relu(self.fc3(x))
+        x = self.dropout(x)
         
-        # 두 번째 선형 계층 및 시그모이드 활성화 적용
-        # return torch.sigmoid(self.fc4(x))
-        return torch.sigmoid(self.fc3(x))
+        return torch.sigmoid(self.fc4(x))
+        # return torch.sigmoid(self.fc3(x))
