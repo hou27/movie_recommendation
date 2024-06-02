@@ -33,7 +33,8 @@ class LinkPredictor(nn.Module):
         self.fc2 = nn.Linear(input_dim * 2, input_dim)
         # self.fc3 = nn.Linear(input_dim, 1)
         self.fc3 = nn.Linear(input_dim, input_dim)
-        self.fc4 = nn.Linear(input_dim, 1)
+        self.fc4 = nn.Linear(input_dim, input_dim)
+        self.fc5 = nn.Linear(input_dim, 1)
         self.dropout = nn.Dropout(p=0.5)
 
     def forward(self, z, edge_index):
@@ -55,6 +56,8 @@ class LinkPredictor(nn.Module):
 
         x = F.relu(self.fc3(x))
         x = self.dropout(x)
+
+        x = F.relu(self.fc4(x))
+        x = self.dropout(x)
         
-        return torch.sigmoid(self.fc4(x))
-        # return torch.sigmoid(self.fc3(x))
+        return torch.sigmoid(self.fc5(x))

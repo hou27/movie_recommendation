@@ -42,8 +42,8 @@ class RecommendService:
         # load saved models
         gcn_model = GCNLinkPredictor(num_in_features, num_out_features, self.num_users)
         link_predictor = LinkPredictor(num_out_features)
-        gcn_model.load_state_dict(torch.load('./model/gcn_model_0602.pth'))
-        link_predictor.load_state_dict(torch.load('./model/link_predictor_0602.pth'))
+        gcn_model.load_state_dict(torch.load('./model/gcn_model_0602_heavy.pth'))
+        link_predictor.load_state_dict(torch.load('./model/link_predictor_0602_heavy.pth'))
         print("Model loaded successfully")
 
         # 모델을 evaluation 모드로 변경
@@ -83,11 +83,10 @@ class RecommendService:
                 recommend_movie_count_per_loop = 1
             # loop backward
             for i in range(num_user_interacted_movies - 1, -1, -1):
-                node_embeddings, edge_index = self.__create_node_embedding([new_user_interacted_movies[i]])
+                node_embeddingsx = self.__create_node_embedding([new_user_interacted_movies[i]])
                 movie_id_list += recommend_movies_for_new_user(
                         self.link_predictor, 
-                        node_embeddings, 
-                        edge_index=edge_index, 
+                        node_embeddings,
                         num_movies=num_movies, 
                         num_recommendations=recommend_movie_count_per_loop, 
                         genre_indexs=genre_indexs,
@@ -102,11 +101,10 @@ class RecommendService:
             # 중복 제거
             movie_id_list = list(set(movie_id_list))
 
-        node_embeddings, edge_index = self.__create_node_embedding(new_user_interacted_movies)
+        node_embeddings = self.__create_node_embedding(new_user_interacted_movies)
         movie_id_list += recommend_movies_for_new_user(
                 self.link_predictor, 
-                node_embeddings, 
-                edge_index=edge_index, 
+                node_embeddings,
                 num_movies=num_movies, 
                 num_recommendations=num_recommendations,
                 genre_indexs=genre_indexs,
@@ -120,6 +118,24 @@ class RecommendService:
                 status=200,
                 message="Recommend Successfully",
                 data=movie_id_list
+            )
+    
+    async def get_related_movies(self, movie_id: int) -> ResponseDto:
+        movie_id -= 1
+        num_movies = self.movie_features.shape[0]
+        node_embeddings = self.__create_node_embedding([movie_id])
+        related_movies = recommend_movies_for_new_user(
+                self.link_predictor, 
+                node_embeddings, 
+                num_movies=num_movies, 
+                num_recommendations=20,
+                interacted_movie_index=[movie_id]
+            ).tolist()
+
+        return ResponseDto(
+                status=200,
+                message="Get Related Movies Successfully",
+                data=related_movies
             )
     
     # private method for create node embeddings
@@ -137,4 +153,4 @@ class RecommendService:
 
         node_embeddings = self.gcn_model(new_x, edge_index)
 
-        return node_embeddings, edge_index
+        return node_embeddings

@@ -7,7 +7,7 @@ def create_new_user_embedding(movie_features, interacted_movie_indices):
     return new_user_embedding
 
 # 새로운 유저에 대한 영화 추천
-def recommend_movies_for_new_user(link_predictor, node_embeddings, edge_index, num_users = 1, num_movies = 9525, num_recommendations=5, genre_indexs=None, interacted_movie_index=None):
+def recommend_movies_for_new_user(link_predictor, node_embeddings, num_users = 1, num_movies = 9525, num_recommendations=5, genre_indexs=None, interacted_movie_index=None):
     movie_indices = torch.arange(num_users, num_users + num_movies) # 영화 인덱스 생성 (유저 수만큼 offset)
     
     # user-movie pairs 생성

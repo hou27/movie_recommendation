@@ -28,6 +28,13 @@ async def recommendation(
             genre_id=genre_id
         )
 
+@app.get("/recommendation/movie/{movie_id}", status_code=200, response_model=ResponseDto)
+async def get_related_movies(
+        movie_id: int,
+        recommend_service: RecommendService = Depends(RecommendService),
+    ) -> ResponseDto:
+    return await recommend_service.get_related_movies(movie_id)
+
 @app.post("/surveys/result", status_code=201, response_model=ResponseDto)
 async def survey_result(
         request: SurveyResultRequest,
