@@ -42,8 +42,8 @@ class RecommendService:
         # load saved models
         gcn_model = GCNLinkPredictor(num_in_features, num_out_features, self.num_users)
         link_predictor = LinkPredictor(num_out_features)
-        gcn_model.load_state_dict(torch.load('./model/gcn_model_0601_light.pth'))
-        link_predictor.load_state_dict(torch.load('./model/link_predictor_0601_light.pth'))
+        gcn_model.load_state_dict(torch.load('./model/gcn_model_0602_light.pth'))
+        link_predictor.load_state_dict(torch.load('./model/link_predictor_0602_light.pth'))
         print("Model loaded successfully")
 
         # 모델을 evaluation 모드로 변경
@@ -70,14 +70,18 @@ class RecommendService:
 
         # 장르 기반 추천이 아닐 경우
         elif not genre_id:
-            for i in range(num_user_interacted_movies - 1):
+            recommend_movie_count_per_loop = int(num_recommendations/num_user_interacted_movies)
+            if recommend_movie_count_per_loop == 0:
+                recommend_movie_count_per_loop = 1
+            # loop backward
+            for i in range(num_user_interacted_movies - 1, -1, -1):
                 node_embeddings, edge_index = self.__create_node_embedding([new_user_interacted_movies[i]])
                 movie_id_list += recommend_movies_for_new_user(
                         self.link_predictor, 
-                        node_embeddings,
+                        node_embeddings, 
                         edge_index=edge_index, 
                         num_movies=num_movies, 
-                        num_recommendations=num_recommendations,  
+                        num_recommendations=recommend_movie_count_per_loop, 
                         genre_indexs=genre_indexs,
                         interacted_movie_index=new_user_interacted_movies
                     ).tolist()
