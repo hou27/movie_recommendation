@@ -83,34 +83,40 @@ class RecommendService:
                 recommend_movie_count_per_loop = 1
             # loop backward
             for i in range(num_user_interacted_movies - 1, -1, -1):
+                print(new_user_interacted_movies[i])
+                tmp_movie_id_list = []
                 node_embeddings = self.__create_node_embedding([new_user_interacted_movies[i]])
-                movie_id_list += recommend_movies_for_new_user(
+                tmp_movie_id_list = recommend_movies_for_new_user(
                         self.link_predictor, 
                         node_embeddings,
                         num_movies=num_movies, 
-                        num_recommendations=recommend_movie_count_per_loop, 
+                        num_recommendations=num_recommendations, 
                         genre_indexs=genre_indexs,
                         interacted_movie_index=new_user_interacted_movies
                     ).tolist()
                 # 위 결과에서 int(num_recommendations/num_user_interacted_movies)개를 랜덤으로 선정
-                movie_id_list = np.random.choice(
-                        movie_id_list, 
-                        int(num_recommendations/num_user_interacted_movies), replace=False
+                movie_id_list += np.random.choice(
+                        tmp_movie_id_list, 
+                        recommend_movie_count_per_loop, replace=False
                     ).tolist()
                 
             # 중복 제거
             movie_id_list = list(set(movie_id_list))
-
+            
         node_embeddings = self.__create_node_embedding(new_user_interacted_movies)
-        movie_id_list += recommend_movies_for_new_user(
+        tmp_final_movie_id_list = []
+        tmp_final_movie_id_list += recommend_movies_for_new_user(
                 self.link_predictor, 
                 node_embeddings,
                 num_movies=num_movies, 
                 num_recommendations=num_recommendations,
                 genre_indexs=genre_indexs,
                 interacted_movie_index=new_user_interacted_movies
-            ).tolist()[:20-len(movie_id_list)]
-        
+            ).tolist()
+        movie_id_list += np.random.choice(
+                        tmp_final_movie_id_list, 
+                        20-len(movie_id_list), replace=False
+                    ).tolist()
         # 중복 제거
         movie_id_list = list(set(movie_id_list))
 
