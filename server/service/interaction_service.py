@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Tuple
 import pandas as pd
 
 from dtos.response_dto import ResponseDto
@@ -46,7 +46,7 @@ class InteractionService:
     #             message="Control Like Successfully"
     #        )
     
-    def _toggle_interaction(self, df: pd.DataFrame, user_id: int, movie_id: int) -> tuple[pd.DataFrame, bool]:
+    def _toggle_interaction(self, df: pd.DataFrame, user_id: int, movie_id: int) -> Tuple[pd.DataFrame, bool]:
         condition = (df['user_id'] == user_id) & (df['movie_id'] == movie_id)
         if df.loc[condition].empty:
             df = pd.concat([df, pd.DataFrame([[user_id, movie_id]], columns=["user_id", "movie_id"])])

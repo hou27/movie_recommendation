@@ -35,7 +35,7 @@ def create_new_user_embedding(movie_features, interacted_movie_indices):
 # 제외할 영화 인덱스
 excluded_movies = np.load('./data/excluded_movie_indices_0810.npy')
 
-def recommend_movies_for_new_user(link_predictor, node_embeddings, num_users=1, num_movies=9525, num_recommendations=5, genre_indexs=None, interacted_movie_index=None):
+def recommend_movies_for_new_user(link_predictor, node_embeddings, num_users=1, num_movies=9525, num_recommendations=5, genre_indexs=None, interacted_movie_index=None, disliked_movie_index=None):
     movie_indices = torch.arange(num_users, num_users + num_movies)  # 영화 인덱스 생성 (유저 수만큼 offset)
     
     # user-movie pairs 생성
@@ -43,15 +43,21 @@ def recommend_movies_for_new_user(link_predictor, node_embeddings, num_users=1, 
 
     # 마스크 생성
     mask = torch.ones(num_movies, dtype=torch.bool)
-    
+
     # 장르 필터링
-    if genre_indexs is not None:
+    if genre_indexs is not None and len(genre_indexs) > 0:
         mask = torch.zeros(num_movies, dtype=torch.bool)  # 모든 영화에 대해 False로 초기화
-        mask[genre_indexs] = True  # 해당 장르의 영화만 True로 변경
+        mask[genre_indexs] = True
     
     # 이미 본 영화 제외
-    if interacted_movie_index is not None:
+    if interacted_movie_index is not None and len(interacted_movie_index) > 0:
+        interacted_movie_index = np.asarray(interacted_movie_index, dtype=int)
         mask[interacted_movie_index] = False
+    
+    # 싫어요한 영화 제외
+    if disliked_movie_index is not None and len(disliked_movie_index) > 0:
+        disliked_movie_index = np.asarray(disliked_movie_index, dtype=int)
+        mask[disliked_movie_index] = False
     
     # 제외할 영화 인덱스 적용
     excluded_movies_tensor = torch.tensor(excluded_movies, dtype=torch.long)
