@@ -53,12 +53,22 @@ async def control_like(
     user_id = request.userId
     movie_id = request.movieId
 
-    return await interaction_service.control_like(user_id, movie_id)
+    return await interaction_service.control_interaction(user_id, movie_id, "like")
 
-@app.get("/likes", status_code=200, response_model=ResponseDto)
-async def get_interactions(
+@app.post("/dislikes", status_code=201, response_model=ResponseDto)
+async def control_dislike(
+        request: ControlLikeRequest,
         interaction_service: InteractionService = Depends(InteractionService),
-        user_id: int = Query(..., alias="userId"),
     ) ->  ResponseDto:
+    user_id = request.userId
+    movie_id = request.movieId
 
-    return await interaction_service.get_interactions(user_id)
+    return await interaction_service.control_interaction(user_id, movie_id, "dislike")
+
+# @app.get("/likes", status_code=200, response_model=ResponseDto)
+# async def get_interactions(
+#         interaction_service: InteractionService = Depends(InteractionService),
+#         user_id: int = Query(..., alias="userId"),
+#     ) ->  ResponseDto:
+
+#     return await interaction_service.get_interactions(user_id)
