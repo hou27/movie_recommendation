@@ -113,10 +113,11 @@ class RecommendService:
                 genre_indexs=genre_indexs,
                 interacted_movie_index=new_user_interacted_movies
             ).tolist()
-        movie_id_list += np.random.choice(
-                        tmp_final_movie_id_list, 
-                        20-len(movie_id_list), replace=False
-                    ).tolist()
+        if len(movie_id_list) < 20:
+            movie_id_list += np.random.choice(
+                            tmp_final_movie_id_list, 
+                            20-len(movie_id_list), replace=False
+                        ).tolist()
         # 중복 제거
         movie_id_list = list(set(movie_id_list))
 
